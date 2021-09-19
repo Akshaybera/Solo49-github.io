@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Akshay Bera- Motocross game</title>
+  <style>
+    body{
+  margin: 0;
+  font-family: monospace;
+  font-size: 1.25em;
+}
+    </style>
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!-- Motocross image base64 -->
+<template>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAXCAYAAAD+4+QTAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABl0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4xOdTWsmQAAALfSURBVEhLrVVLaBRBEN2NoqirB1Hw4MGD+ImHYNQQdme2IdMz09s9CfgZD56CQREPgmJAEFn1JniSIIIaPHjRg168CYoEQYwa/AYvXvwgRhEFxQ9ZfdXTO3F3Zpc1yYNH73ZVvaqu/kymGdrDcB6Nlls6ZHE5brtquNvzlmrjbMHmwT6IX4b4n5hc3YMpG3nMEMzrXQ3RqzUJIlaKjtho3KYP25UDWMHP+gSWq0a7hFgyKy2D4Gh9AiK1zrjMDIwFy9D3L7GwK9+AD6Pf6gXGY/m+vsXGfXqwuTwVJ+DyIiXFdLbgqq1I/gDzFV0EV2MFT3VEUf8JiDyPkshfYD9jLGdMGkzKFbC/jIpQdywhlhtT60BLbkRJ4nZ9xni8u3vHAuOSKXK5EwU8NvbTZrp1MBbm0KajCJ6oScbVXZj1/Sg6wRbbkQp+r7TNKwU03wxZ9HY3XTwE77IcKWw/6LSc0hokOog9ehYncuV+/L9Ge4IEk0j8w8zfpziscJvdE3SWy+U2oz0FIcR8xkubbU8eqQpqkpArP9bMNaBOxOUQHRa0coRaauRr4bruIuzJ7zSRRoToU4wVOiRGhpCtvnupQAvO1Qs1Y546gBaiuNebgmChkWmINuYF62xPddlu4GH5B1DdMIRQZXoC+Ewgjva0A/8rSHQFK7uE8bztlLaTTSsTir6y4aTPviZXnyxP7SUbEg3E8wnKm+RD7xk68C5h5+o67tncTMHv3YDlfks4gFQZ3eyEjcvvWMV7CA+ZQs4mfKrk8jD2oO57kWTULi6/IuEHCN7G6NPNpzaFYThH25Jxmij0CT0jU21KI849juP6Rt8QeixT46pEYfSMPEo1aspJ6rfRa4Qs/N6mxxPlCK3kRNIQ85YRagoIDabEatIrgLeK5VJXQyesR7QbnebAMwL/M4j757jTl1UOGo/4UTwJxzGM4zg1F5jvrzLmlpH3/bWI3QPxfibEymg2k/kLGmgFj+yZMV8AAAAASUVORK5CYII</template>
+<!-- partial -->
+<marquee behavior="scroll" direction="left" bgcolor="pink">Akshay Bera</marquee>
+  <script>
+    var c = document.createElement("canvas");
+var ctx = c.getContext("2d");
+c.width = 1620; 
+c.height = 495;
+document.body.appendChild(c);
+
+var perm = [];
+while (perm.length < 355){
+    while(perm.includes(val = Math.floor(Math.random()*355)));
+    perm.push(val);
+}
+
+var lerp = (a,b,t) => a + (b-a) * (1-Math.cos(t*Math.PI))/2;
+var noise = x=>{
+    x = x * 0.01 % 354;
+    return lerp(perm[Math.floor(x)], perm[Math.ceil(x)], x - Math.floor(x));
+}
+
+var Player =  function(){
+    this.x = c.width/2;
+    this.y = 0;
+    this.ySpeed = 0;
+    this.rot = 0;
+    this.rSpeed = 0;
+    this.img = new Image();
+    this.img.src = document.getElementsByTagName("template")[0].innerHTML;
+    this.draw = function(){
+        var p1 =  c.height - noise(t + this.x) * 0.25;
+        var p2 =  c.height - noise(t+5 + this.x) * 0.25;
+
+        var grounded = 0;
+        if(p1-12 > this.y){
+            this.ySpeed += 0.1;
+        }else{
+            this.ySpeed -= this.y - (p1-12);
+            this.y = p1 - 12;
+            grounded = 1;
+        }
+
+        var angle = Math.atan2((p2-12) - this.y, (this.x+5) - this.x);
+        this.y += this.ySpeed;
+
+        if(!playing || grounded && Math.abs(this.rot) > Math.PI * 0.5){
+            playing = false;
+            this.rSpeed = 5;
+            k.ArrowUp = 1;
+            this.x -= speed * 5;
+        }
+
+        
+        if(grounded && playing){
+            this.rot -= (this.rot - angle) * 0.65;
+            this.rSpeed = this.rSpeed - (angle - this.rot);
+        }
+        this.rSpeed += (k.ArrowLeft - k.ArrowRight) * 0.05;
+        this.rot -= this.rSpeed * 0.1;
+        if(this.rot > Math.PI) this.rot = -Math.PI;
+        if(this.rot < -Math.PI) this.rot = Math.PI;
+        ctx.save();
+        ctx.translate(this.x, this.y - 3);
+        ctx.rotate(this.rot);
+        ctx.drawImage(this.img, -15, -15, 30, 30);
+        ctx.restore();
+    }
+}
+
+var player = new Player();
+var t = 0;
+var speed = 0;
+var playing = true;
+var k = {ArrowUp:0, ArrowDown:0, ArrowLeft:0, ArrowRight:0};
+function loop(){
+    speed -= (speed - (k.ArrowUp - k.ArrowDown)) * 0.01;
+    t += 10 * speed;
+    ctx.fillStyle = "#19f";
+    ctx.fillRect(0,0,c.width, c.height);
+
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.beginPath();
+    ctx.moveTo(0, c.height);
+    for (let i = 0; i < c.width; i++)
+        ctx.lineTo(i, c.height*0.8 - noise(t + i*5) * 0.25);
+    ctx.lineTo(c.width, c.height);
+    ctx.fill();
+
+    ctx.fillStyle = "#444";
+    ctx.beginPath();
+    ctx.moveTo(0, c.height);
+    for (let i = 0; i < c.width; i++)
+        ctx.lineTo(i, c.height - noise(t + i) * 0.25);
+    ctx.lineTo(c.width, c.height);
+    ctx.fill();
+
+    player.draw();
+    if(player.x < 0)
+        restart();
+    requestAnimationFrame(loop);
+}
+
+onkeydown = d=> k[d.key] = 1;
+onkeyup = d=> k[d.key] = 0;
+
+function restart(){
+    
+    player = new Player();
+    t = 0;
+    speed = 0;
+    playing = true;
+    k = {ArrowUp:0, ArrowDown:0, ArrowLeft:0, ArrowRight:0};
+
+}
+loop();
+
+var instructions = document.createElement("div");
+instructions.innerHTML += "[up] [down] = accelerate <br> [Left] [Rigth] = rotate";
+document.body.appendChild(instructions);
+    </script>
+    <marquee behavior="scroll" direction="right" scrollamount="1" bgcolor="blue">Solo49</marquee>
+
+</body>
+</html>
